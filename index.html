@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OSINT Multi-Tool</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'), linear-gradient(135deg, #0a0a0a 0%, #1d1d1d 100%);
+      color: #e0e0e0;
+      overflow-x: hidden;
+    }
+    a { text-decoration: none; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+    .fade-in { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.8s ease-out forwards; }
+    .delay-1 { animation-delay: 0.3s; }
+    .delay-2 { animation-delay: 0.6s; }
+    .delay-3 { animation-delay: 0.9s; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+    header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
+    .logo {
+      font-size: 1.5rem; font-weight: 700;
+      background: linear-gradient(45deg, #1fa2a6, #4287f5);
+      -webkit-background-clip: text; color: transparent;
+      animation: logoGlow 2s ease-in-out infinite alternate;
+    }
+    @keyframes logoGlow { from { filter: brightness(1); } to { filter: brightness(1.5); } }
+    nav ul { list-style: none; display: flex; gap: 30px; }
+    nav a {
+      color: #e0e0e0; font-weight: 500; position: relative;
+      padding: 5px 0;
+    }
+    nav a::after {
+      content: '';
+      position: absolute; left: 0; bottom: 0;
+      width: 0; height: 2px;
+      background: #1fa2a6;
+      transition: width 0.3s;
+    }
+    nav a:hover::after { width: 100%; }
+
+    .hero {
+      text-align: center;
+      padding: 100px 0;
+    }
+    .hero h1 {
+      font-size: 3rem; font-weight: 700; color: #fff; line-height: 1.2;
+    }
+    .hero p {
+      margin-top: 20px; font-size: 1.125rem; color: #ddd;
+      max-width: 600px; margin-left: auto; margin-right: auto;
+    }
+    .btn-primary {
+      display: inline-block; margin-top: 40px;
+      padding: 15px 45px; font-size: 1rem; font-weight: 600;
+      color: #121212; border-radius: 50px;
+      background: linear-gradient(135deg, #ffd700, #ff8c00);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .btn-primary:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(255, 140, 0, 0.6);
+    }
+
+    #features { padding: 80px 0; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px; border-radius: 12px;
+      backdrop-filter: blur(5px);
+      transition: transform 0.3s, box-shadow 0.3s;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+    }
+    .card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7);
+    }
+    .card i {
+      font-size: 2rem; color: #ffd700; margin-bottom: 15px;
+      animation: iconBounce 1.5s ease infinite;
+    }
+    @keyframes iconBounce { 0%,100%{transform: translateY(0);}50%{transform: translateY(-8px);} }
+    .card h3 { margin-bottom: 15px; font-size: 1.25rem; color: #00e5ff; }
+    .card p { color: #ccc; line-height: 1.6; }
+
+    /* About */
+    #about { padding: 80px 20px; text-align: center; }
+    #about h2 {
+      font-size: 2rem; margin-bottom: 20px;
+      background: linear-gradient(45deg, #1fa2a6, #4287f5);
+      -webkit-background-clip: text; color: transparent;
+    }
+    #about p { max-width: 800px; margin: 0 auto; color: #ccc; line-height: 1.6; }
+
+    footer { text-align: center; padding: 40px 0; }
+    footer p { color: #888; font-size: 0.875rem; }
+    footer a { color: #1fa2a6; }
+  </style>
+</head>
+<body>
+  <div class="container fade-in delay-1">
+    <header>
+      <div class="logo">OSINT Multi-Tool</div>
+      <nav>
+        <ul>
+          <li><a href="#features">Функции</a></li>
+          <li><a href="#about">О нас</a></li>
+          <li><a href="#contact">Контакты</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <section class="hero fade-in delay-2">
+      <h1>Профессиональный инструмент для сбора и анализа данных</h1>
+      <p>Объединяет открытые и закрытые источники, предоставляя полный спектр возможностей для расследований и мониторинга.</p>
+      <a class="btn-primary" href="https://t.me/BleskMarketbot?start=ctgr_117735" target="_blank">Приобрести в Telegram</a>
+    </section>
+
+    <section id="features" class="fade-in delay-3">
+      <div class="features-grid">
+        <div class="card"><i class="fas fa-globe"></i><h3>Открытые источники</h3><p>Автоматический сбор данных из публичных веб-ресурсов, соцсетей и форумов.</p></div>
+        <div class="card"><i class="fas fa-lock"></i><h3>Закрытые базы</h3><p>Интеграция с платными и закрытыми хранилищами для расширенного поиска.</p></div>
+        <div class="card"><i class="fas fa-user-friends"></i><h3>Интуитивный интерфейс</h3><p>Современный дизайн для быстрого доступа ко всем функциям.</p></div>
+        <div class="card"><i class="fas fa-search"></i><h3>Быстрый поиск</h3><p>Молниеносный поиск и мгновенный вывод данных в удобном формате.</p></div>
+      </div>
+    </section>
+
+    <section id="about" class="fade-in delay-3">
+      <h2>О инструменте</h2>
+      <p>OSINT Multi-Tool создан для профессионалов — от цифровых детективов до маркетинговых аналитиков. Мы используем алгоритмы машинного обучения и глубокую интеграцию с источниками, чтобы вы получали исчерпывающую информацию быстро и эффективно.</p>
+    </section>
+
+    <footer id="contact" class="fade-in delay-3">
+      <p>&copy; 2025 OSINT Multi-Tool. Связь: <a href="mailto:info@osint-tool.com">info@osint-tool.com</a></p>
+    </footer>
+  </div>
+</body>
+</html>
