@@ -3,146 +3,2776 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OSINT Multi-Tool</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  <title>OSINT Multi-Tool - Инструмент поиска информации о личности</title>
+  <meta name="description" content="OSINT инструмент для поиска и анализа информации о личности из открытых источников. Создан опытными разработчиками.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary-color: #00d4ff;
+      --secondary-color: #ff6b35;
+      --accent-color: #ffd700;
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #1a1a2e;
+      --bg-card: rgba(26, 26, 46, 0.8);
+      --text-primary: #ffffff;
+      --text-secondary: #b8b8d1;
+      --text-muted: #8a8aa0;
+      --border-color: rgba(0, 212, 255, 0.2);
+      --shadow-primary: 0 20px 40px rgba(0, 212, 255, 0.1);
+      --shadow-hover: 0 30px 60px rgba(0, 212, 255, 0.2);
+      --gradient-primary: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+      --gradient-secondary: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+      --gradient-bg: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
-      font-family: 'Poppins', sans-serif;
-      background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'), linear-gradient(135deg, #0a0a0a 0%, #1d1d1d 100%);
-      color: #e0e0e0;
+      font-family: 'Inter', sans-serif;
+      background: var(--gradient-bg);
+      color: var(--text-primary);
       overflow-x: hidden;
+      line-height: 1.6;
     }
-    a { text-decoration: none; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
-    .fade-in { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.8s ease-out forwards; }
-    .delay-1 { animation-delay: 0.3s; }
-    .delay-2 { animation-delay: 0.6s; }
-    .delay-3 { animation-delay: 0.9s; }
-    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 4px;
+    }
 
-    header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
+    /* Particles Background */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.3;
+    }
+
+    /* Loading Screen */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-primary);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease;
+    }
+
+    .loader {
+      width: 60px;
+      height: 60px;
+      border: 3px solid var(--border-color);
+      border-top: 3px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(10, 10, 15, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+    }
+
     .logo {
-      font-size: 1.5rem; font-weight: 700;
-      background: linear-gradient(45deg, #1fa2a6, #4287f5);
-      -webkit-background-clip: text; color: transparent;
-      animation: logoGlow 2s ease-in-out infinite alternate;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    @keyframes logoGlow { from { filter: brightness(1); } to { filter: brightness(1.5); } }
-    nav ul { list-style: none; display: flex; gap: 30px; }
-    nav a {
-      color: #e0e0e0; font-weight: 500; position: relative;
-      padding: 5px 0;
-    }
-    nav a::after {
-      content: '';
-      position: absolute; left: 0; bottom: 0;
-      width: 0; height: 2px;
-      background: #1fa2a6;
-      transition: width 0.3s;
-    }
-    nav a:hover::after { width: 100%; }
 
+    .logo i {
+      font-size: 2rem;
+      color: var(--primary-color);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 30px;
+      align-items: center;
+    }
+
+    nav a {
+      color: var(--text-secondary);
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    nav a:hover {
+      color: var(--primary-color);
+      background: rgba(0, 212, 255, 0.1);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    /* Hero Section */
     .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       text-align: center;
+      position: relative;
+      padding: 120px 0 80px;
+    }
+
+    .hero-content {
+      max-width: 800px;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 800;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-color) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      margin-bottom: 30px;
+      font-weight: 400;
+    }
+
+    .hero-description {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+      line-height: 1.8;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px 30px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: var(--gradient-primary);
+      color: var(--bg-primary);
+      box-shadow: var(--shadow-primary);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--primary-color);
+      border: 2px solid var(--primary-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--primary-color);
+      color: var(--bg-primary);
+      transform: translateY(-3px);
+    }
+
+    /* Features Section */
+    .features {
+      padding: 100px 0;
+      position: relative;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-title h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section-title p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-bottom: 60px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 40px 30px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .feature-card:hover::before {
+      left: 100%;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      border-color: var(--primary-color);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .feature-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      background: var(--gradient-primary);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: var(--bg-primary);
+    }
+
+    .feature-card h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: var(--text-primary);
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* Stats Section */
+    .stats {
+      background: var(--bg-secondary);
+      padding: 80px 0;
+      margin: 60px 0;
+      border-radius: 20px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+      text-align: center;
+    }
+
+    .stat-item h3 {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--primary-color);
+      margin-bottom: 10px;
+    }
+
+    .stat-item p {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Demo Section */
+    .demo {
+      padding: 100px 0;
+      text-align: center;
+    }
+
+    .demo-container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 40px;
+      position: relative;
+    }
+
+    .terminal {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      text-align: left;
+      margin: 30px 0;
+    }
+
+    .terminal-header {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    .terminal-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27ca3f; }
+
+    .terminal-content {
+      color: #00ff00;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .typing-animation {
+      border-right: 2px solid #00ff00;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { border-color: #00ff00; }
+      51%, 100% { border-color: transparent; }
+    }
+
+    /* Pricing Section */
+    .pricing {
+      padding: 100px 0;
+      background: var(--bg-secondary);
+      border-radius: 20px;
+      margin: 60px 0;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .pricing-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 40px 30px;
+      text-align: center;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .pricing-card.featured {
+      border-color: var(--primary-color);
+      transform: scale(1.05);
+    }
+
+    .pricing-card.featured::before {
+      content: 'Популярный';
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gradient-primary);
+      color: var(--bg-primary);
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-10px);
+      border-color: var(--primary-color);
+    }
+
+    .pricing-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      color: var(--text-primary);
+    }
+
+    .price {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--primary-color);
+      margin-bottom: 20px;
+    }
+
+    .price-period {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-bottom: 30px;
+    }
+
+    .features-list {
+      list-style: none;
+      margin-bottom: 30px;
+    }
+
+    .features-list li {
+      padding: 8px 0;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .features-list i {
+      color: var(--primary-color);
+    }
+
+    .features-list i.fa-times {
+      color: var(--text-muted);
+    }
+
+    .text-muted {
+      color: var(--text-muted) !important;
+    }
+
+    /* About Section */
+    .about {
       padding: 100px 0;
     }
-    .hero h1 {
-      font-size: 3rem; font-weight: 700; color: #fff; line-height: 1.2;
-    }
-    .hero p {
-      margin-top: 20px; font-size: 1.125rem; color: #ddd;
-      max-width: 600px; margin-left: auto; margin-right: auto;
-    }
-    .btn-primary {
-      display: inline-block; margin-top: 40px;
-      padding: 15px 45px; font-size: 1rem; font-weight: 600;
-      color: #121212; border-radius: 50px;
-      background: linear-gradient(135deg, #ffd700, #ff8c00);
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .btn-primary:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 20px rgba(255, 140, 0, 0.6);
+
+    .about-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
     }
 
-    #features { padding: 80px 0; }
-    .features-grid {
+    .about-text h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .about-text p {
+      color: var(--text-muted);
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+
+    .about-features {
+      list-style: none;
+    }
+
+    .about-features li {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 10px 0;
+      color: var(--text-secondary);
+    }
+
+    .about-features i {
+      color: var(--primary-color);
+      font-size: 1.2rem;
+    }
+
+    .about-image {
+      position: relative;
+    }
+
+    .about-image::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: -20px;
+      bottom: -20px;
+      background: var(--gradient-primary);
+      border-radius: 20px;
+      opacity: 0.1;
+      z-index: -1;
+    }
+
+    .code-preview {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 30px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: #e0e0e0;
+      border: 1px solid var(--border-color);
+    }
+
+    /* Contact Section */
+    .contact {
+      padding: 100px 0;
+      background: var(--bg-secondary);
+      border-radius: 20px;
+      margin: 60px 0;
+    }
+
+    .contact-content {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .contact-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 30px;
+      margin-top: 50px;
     }
-    .card {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 30px; border-radius: 12px;
-      backdrop-filter: blur(5px);
-      transition: transform 0.3s, box-shadow 0.3s;
-      display: flex; flex-direction: column; align-items: center; text-align: center;
-    }
-    .card:hover {
-      transform: translateY(-10px) scale(1.02);
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7);
-    }
-    .card i {
-      font-size: 2rem; color: #ffd700; margin-bottom: 15px;
-      animation: iconBounce 1.5s ease infinite;
-    }
-    @keyframes iconBounce { 0%,100%{transform: translateY(0);}50%{transform: translateY(-8px);} }
-    .card h3 { margin-bottom: 15px; font-size: 1.25rem; color: #00e5ff; }
-    .card p { color: #ccc; line-height: 1.6; }
 
-    /* About */
-    #about { padding: 80px 20px; text-align: center; }
-    #about h2 {
-      font-size: 2rem; margin-bottom: 20px;
-      background: linear-gradient(45deg, #1fa2a6, #4287f5);
-      -webkit-background-clip: text; color: transparent;
+    .contact-item {
+      background: var(--bg-card);
+      padding: 30px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
     }
-    #about p { max-width: 800px; margin: 0 auto; color: #ccc; line-height: 1.6; }
 
-    footer { text-align: center; padding: 40px 0; }
-    footer p { color: #888; font-size: 0.875rem; }
-    footer a { color: #1fa2a6; }
+    .contact-item:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary-color);
+    }
+
+    .contact-item i {
+      font-size: 2rem;
+      color: var(--primary-color);
+      margin-bottom: 15px;
+    }
+
+    .contact-item h3 {
+      margin-bottom: 10px;
+      color: var(--text-primary);
+    }
+
+    .contact-item p {
+      color: var(--text-muted);
+    }
+
+    .contact-item a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--bg-primary);
+      padding: 60px 0 30px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .footer-section h3 {
+      color: var(--text-primary);
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+    }
+
+    .footer-section p,
+    .footer-section a {
+      color: var(--text-muted);
+      line-height: 1.8;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-section a:hover {
+      color: var(--primary-color);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 30px;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .social-links a {
+      width: 40px;
+      height: 40px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: all 0.3s ease;
+    }
+
+    .social-links a:hover {
+      background: var(--primary-color);
+      color: var(--bg-primary);
+      transform: translateY(-3px);
+    }
+
+    /* Back to Top Button */
+    .back-to-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      background: var(--gradient-primary);
+      border: none;
+      border-radius: 50%;
+      color: var(--bg-primary);
+      font-size: 1.2rem;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .back-to-top.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .back-to-top:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .mobile-menu-btn {
+        display: block;
+      }
+
+      nav ul {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: var(--bg-primary);
+        flex-direction: column;
+        padding: 20px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      nav ul.active {
+        display: flex;
+      }
+
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+
+      .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .about-content {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .features-grid,
+      .pricing-grid,
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 0 15px;
+      }
+
+      .hero {
+        padding: 100px 0 60px;
+      }
+
+      .section-title h2 {
+        font-size: 2rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Animation Classes */
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .animate-on-scroll.animated {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Utility Classes */
+    .text-gradient {
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .glow {
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+    }
+
+    /* Demo Styles */
+    .demo-search-bar input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .demo-results {
+      animation: slideInUp 0.5s ease-out;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-item {
+      transition: all 0.3s ease;
+    }
+
+    .result-item:hover {
+      background: rgba(0, 212, 255, 0.05);
+      padding-left: 15px;
+    }
+
+    .video-demo {
+      margin-bottom: 30px;
+    }
+
+    /* Enhanced Video Player Styles */
+    .custom-video-player {
+      background: linear-gradient(145deg, var(--bg-card), rgba(26, 26, 46, 0.95));
+      border-radius: 24px;
+      padding: 25px;
+      border: 2px solid var(--border-color);
+      box-shadow: var(--shadow-primary), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .custom-video-player::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.05), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .custom-video-player:hover::before {
+      left: 100%;
+    }
+
+    .custom-video-player:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      border-color: var(--primary-color);
+    }
+
+    .video-container {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      background: linear-gradient(145deg, #000, #1a1a1a);
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .video-container video {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 16px;
+    }
+
+    .video-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      backdrop-filter: blur(2px);
+    }
+
+    .video-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.9);
+    }
+
+    .play-button {
+      width: 100px;
+      height: 100px;
+      background: var(--gradient-primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: var(--bg-primary);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 15px 40px rgba(0, 212, 255, 0.4), 0 5px 15px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .play-button::before {
+      content: '';
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      right: -5px;
+      bottom: -5px;
+      background: var(--gradient-primary);
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: -1;
+    }
+
+    .play-button:hover {
+      transform: scale(1.15);
+      box-shadow: 0 20px 50px rgba(0, 212, 255, 0.6), 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .play-button:hover::before {
+      opacity: 0.3;
+      animation: pulse-ring 1.5s infinite;
+    }
+
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(1);
+        opacity: 0.3;
+      }
+      100% {
+        transform: scale(1.3);
+        opacity: 0;
+      }
+    }
+
+    .video-controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+      padding: 25px 20px 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      opacity: 0;
+      transition: all 0.4s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .video-container:hover .video-controls {
+      opacity: 1;
+    }
+
+    .controls-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .controls-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .control-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 12px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .control-btn:hover {
+      background: var(--primary-color);
+      color: var(--bg-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+    }
+
+    .time-display {
+      color: white;
+      font-size: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 8px 12px;
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+    }
+
+    .progress-container {
+      flex: 1;
+      margin: 0 20px;
+    }
+
+    .progress-bar-video {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+      position: relative;
+      cursor: pointer;
+      transition: height 0.3s ease;
+    }
+
+    .progress-bar-video:hover {
+      height: 8px;
+    }
+
+    .progress-filled {
+      height: 100%;
+      background: var(--gradient-primary);
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.1s ease;
+      position: relative;
+    }
+
+    .progress-filled::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 4px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 2px;
+    }
+
+    .progress-handle {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      background: var(--primary-color);
+      border: 2px solid white;
+      border-radius: 50%;
+      left: 0%;
+      opacity: 0;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .progress-bar-video:hover .progress-handle {
+      opacity: 1;
+      transform: translateY(-50%) scale(1.2);
+    }
+
+    .video-info {
+      text-align: center;
+      padding: 15px 0;
+    }
+
+    .video-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .video-description {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Enhanced Data Display Forms */
+    .data-display-card {
+      background: linear-gradient(145deg, var(--bg-card), rgba(26, 26, 46, 0.95));
+      border: 2px solid var(--border-color);
+      border-radius: 20px;
+      padding: 25px;
+      margin: 20px 0;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow-primary), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .data-display-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .data-display-card:hover::before {
+      left: 100%;
+    }
+
+    .data-display-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary-color);
+      box-shadow: var(--shadow-hover), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .data-card-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .data-card-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--gradient-primary);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: var(--bg-primary);
+      box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+    }
+
+    .data-card-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .data-item {
+      background: rgba(0, 212, 255, 0.05);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .data-item:hover {
+      background: rgba(0, 212, 255, 0.1);
+      border-color: var(--primary-color);
+      transform: translateY(-2px);
+    }
+
+    .data-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .data-value {
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      word-break: break-all;
+    }
+
+    .data-value.critical {
+      color: var(--secondary-color);
+      font-weight: 700;
+    }
+
+    .data-value.success {
+      color: #27ca3f;
+    }
+
+    .data-value.warning {
+      color: var(--accent-color);
+    }
+
+    .data-badge {
+      display: inline-block;
+      background: var(--gradient-primary);
+      color: var(--bg-primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .data-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .data-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .data-list-item:last-child {
+      border-bottom: none;
+    }
+
+    .data-list-item:hover {
+      background: rgba(0, 212, 255, 0.05);
+      padding-left: 15px;
+      border-radius: 8px;
+    }
+
+    .data-list-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .data-list-value {
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+    }
+
+    .status-online {
+      background: #27ca3f;
+      box-shadow: 0 0 10px rgba(39, 202, 63, 0.5);
+    }
+
+    .status-offline {
+      background: var(--text-muted);
+    }
+
+    .status-warning {
+      background: var(--accent-color);
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+
+    .status-critical {
+      background: var(--secondary-color);
+      box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+    }
+
+    /* Enhanced Search Demo Styles */
+    .enhanced-search-demo {
+      background: linear-gradient(145deg, var(--bg-secondary), rgba(26, 26, 46, 0.95));
+      border-radius: 20px;
+      padding: 30px;
+      margin: 30px 0;
+      border: 2px solid var(--border-color);
+      box-shadow: var(--shadow-primary);
+    }
+
+    .search-input-container {
+      position: relative;
+      margin-bottom: 25px;
+    }
+
+    .search-input-wrapper {
+      display: flex;
+      align-items: center;
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 15px;
+      padding: 15px 20px;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-input-wrapper:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-input-icon {
+      color: var(--primary-color);
+      font-size: 1.2rem;
+      margin-right: 15px;
+    }
+
+    .enhanced-search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .enhanced-search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .search-button {
+      background: var(--gradient-primary);
+      border: none;
+      padding: 12px 25px;
+      border-radius: 10px;
+      color: var(--bg-primary);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-left: 15px;
+      box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+    }
+
+    .search-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+    }
+
+    /* Hacker Terminal Styles */
+    .hacker-terminal {
+      background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+      border-radius: 16px;
+      border: 2px solid #00ff00;
+      font-family: 'JetBrains Mono', monospace;
+      overflow: hidden;
+      box-shadow: 
+        0 0 30px rgba(0, 255, 0, 0.4),
+        0 0 60px rgba(0, 255, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    .hacker-terminal::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, transparent 30%, rgba(0, 255, 0, 0.03) 50%, transparent 70%);
+      pointer-events: none;
+      animation: terminal-scan 4s infinite;
+      z-index: 1;
+    }
+
+    @keyframes terminal-scan {
+      0%, 100% { transform: translateX(-100%); }
+      50% { transform: translateX(100%); }
+    }
+
+    .terminal-header {
+      background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      border-bottom: 2px solid #00ff00;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      position: relative;
+      z-index: 2;
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27ca3f; }
+
+    .terminal-title {
+      color: #00ff00;
+      font-size: 1rem;
+      font-weight: 600;
+      text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+      flex: 1;
+    }
+
+    .hacker-content {
+      padding: 25px;
+      min-height: 400px;
+      background: linear-gradient(145deg, #0a0a0a, #151515);
+      color: #00ff00;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      overflow-y: auto;
+      max-height: 450px;
+      position: relative;
+      z-index: 2;
+      scrollbar-width: thin;
+      scrollbar-color: #00ff00 #1a1a1a;
+    }
+
+    .hacker-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .hacker-content::-webkit-scrollbar-track {
+      background: #1a1a1a;
+      border-radius: 4px;
+    }
+
+    .hacker-content::-webkit-scrollbar-thumb {
+      background: #00ff00;
+      border-radius: 4px;
+      box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+    }
+
+    .hacker-content::-webkit-scrollbar-thumb:hover {
+      background: #00d4ff;
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+    }
+
+    .search-line {
+      margin-bottom: 15px;
+    }
+
+    .prompt {
+      color: #ff6b35;
+      font-weight: 600;
+    }
+
+    .command {
+      color: #00d4ff;
+      margin-left: 10px;
+    }
+
+    .cursor {
+      color: #00ff00;
+      animation: blink 1s infinite;
+    }
+
+    .data-line {
+      margin: 4px 0;
+      padding: 6px 12px;
+      animation: typewriter 0.5s ease-out;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      position: relative;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      border-left: 3px solid transparent;
+    }
+
+    .data-line:hover {
+      background: rgba(0, 255, 0, 0.05);
+      transform: translateX(5px);
+    }
+
+    .data-line.critical {
+      color: #ff6b35;
+      font-weight: 700;
+      background: rgba(255, 107, 53, 0.1);
+      border-left-color: #ff6b35;
+      box-shadow: 0 0 10px rgba(255, 107, 53, 0.2);
+    }
+
+    .data-line.critical:hover {
+      background: rgba(255, 107, 53, 0.15);
+      box-shadow: 0 0 15px rgba(255, 107, 53, 0.3);
+    }
+
+    .data-line.warning {
+      color: #ffd700;
+      font-weight: 600;
+      background: rgba(255, 215, 0, 0.1);
+      border-left-color: #ffd700;
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+    }
+
+    .data-line.warning:hover {
+      background: rgba(255, 215, 0, 0.15);
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
+    }
+
+    .data-line.success {
+      color: #00ff00;
+      background: rgba(0, 255, 0, 0.08);
+      border-left-color: #00ff00;
+      box-shadow: 0 0 6px rgba(0, 255, 0, 0.2);
+    }
+
+    .data-line.success:hover {
+      background: rgba(0, 255, 0, 0.12);
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+    }
+
+    .data-line.info {
+      color: #00d4ff;
+      font-weight: 600;
+      background: rgba(0, 212, 255, 0.08);
+      border-left-color: #00d4ff;
+      box-shadow: 0 0 6px rgba(0, 212, 255, 0.2);
+    }
+
+    .data-line.info:hover {
+      background: rgba(0, 212, 255, 0.12);
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+    }
+
+    .scan-progress {
+      padding: 20px;
+      background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+      border-top: 2px solid #00ff00;
+      border-radius: 0 0 12px 12px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(51, 51, 51, 0.8);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 15px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 255, 0, 0.2);
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00ff00, #00d4ff, #00ff00);
+      background-size: 200% 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+      animation: progress-glow 2s infinite, progress-flow 3s infinite;
+      border-radius: 3px;
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    }
+
+    @keyframes progress-flow {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .scan-status {
+      color: #00ff00;
+      font-size: 0.9rem;
+      text-align: center;
+      font-weight: 600;
+      text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    @keyframes typewriter {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes progress-glow {
+      0%, 100% {
+        box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+      }
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
   </style>
 </head>
 <body>
-  <div class="container fade-in delay-1">
-    <header>
-      <div class="logo">OSINT Multi-Tool</div>
-      <nav>
-        <ul>
-          <li><a href="#features">Функции</a></li>
-          <li><a href="#about">О нас</a></li>
-          <li><a href="#contact">Контакты</a></li>
-        </ul>
-      </nav>
-    </header>
-
-    <section class="hero fade-in delay-2">
-      <h1>Профессиональный инструмент для сбора и анализа данных</h1>
-      <p>Объединяет открытые и закрытые источники, предоставляя полный спектр возможностей для расследований и мониторинга.</p>
-      <a class="btn-primary" href="https://t.me/BleskMarketbot?start=ctgr_117735" target="_blank">Приобрести в Telegram</a>
-    </section>
-
-    <section id="features" class="fade-in delay-3">
-      <div class="features-grid">
-        <div class="card"><i class="fas fa-globe"></i><h3>Открытые источники</h3><p>Автоматический сбор данных из публичных веб-ресурсов, соцсетей и форумов.</p></div>
-        <div class="card"><i class="fas fa-lock"></i><h3>Закрытые базы</h3><p>Интеграция с платными и закрытыми хранилищами для расширенного поиска.</p></div>
-        <div class="card"><i class="fas fa-user-friends"></i><h3>Интуитивный интерфейс</h3><p>Современный дизайн для быстрого доступа ко всем функциям.</p></div>
-        <div class="card"><i class="fas fa-search"></i><h3>Быстрый поиск</h3><p>Молниеносный поиск и мгновенный вывод данных в удобном формате.</p></div>
-      </div>
-    </section>
-
-    <section id="about" class="fade-in delay-3">
-      <h2>О инструменте</h2>
-      <p>OSINT Multi-Tool создан для профессионалов — от цифровых детективов до маркетинговых аналитиков. Мы используем алгоритмы машинного обучения и глубокую интеграцию с источниками, чтобы вы получали исчерпывающую информацию быстро и эффективно.</p>
-    </section>
-
-    <footer id="contact" class="fade-in delay-3">
-      <p>&copy; 2025 OSINT Multi-Tool. Связь: <a href="mailto:info@osint-tool.com">info@osint-tool.com</a></p>
-    </footer>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loader"></div>
   </div>
+
+  <!-- Particles Background -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Header -->
+  <header id="header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <i class="fas fa-shield-alt"></i>
+          OSINT Multi-Tool
+        </div>
+        <nav>
+          <ul id="navMenu">
+            <li><a href="#home">Главная</a></li>
+            <li><a href="#features">Возможности</a></li>
+            <li><a href="#demo">Демо</a></li>
+            <li><a href="#pricing">Цены</a></li>
+            <li><a href="#about">О нас</a></li>
+            <li><a href="#contact">Контакты</a></li>
+          </ul>
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fas fa-bars"></i>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section id="home" class="hero">
+    <div class="container">
+      <div class="hero-content animate-on-scroll">
+        <h1>OSINT Multi-Tool</h1>
+        <p class="hero-subtitle">Инструмент для поиска информации о личности</p>
+        <p class="hero-description">
+          Мощный инструмент для поиска и анализа информации о людях из открытых источников. 
+          Создан опытными разработчиками для быстрого и точного поиска персональных данных.
+        </p>
+        <div class="cta-buttons">
+          <a href="https://t.me/BleskMarketbot?start=ctgr_117735" target="_blank" class="btn btn-primary">
+            <i class="fab fa-telegram"></i>
+            Приобрести в Telegram
+          </a>
+          <a href="#demo" class="btn btn-secondary">
+            <i class="fas fa-play"></i>
+            Посмотреть демо
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-title animate-on-scroll">
+        <h2>Мощные возможности</h2>
+        <p>Комплексное решение для поиска и анализа данных</p>
+      </div>
+      
+      <div class="features-grid">
+        <div class="feature-card animate-on-scroll">
+          <div class="feature-icon">
+            <i class="fas fa-globe-americas"></i>
+          </div>
+          <h3>Открытые источники</h3>
+          <p>Автоматический сбор и анализ данных из социальных сетей, форумов, новостных сайтов и публичных баз данных с использованием ИИ.</p>
+        </div>
+        
+        <div class="feature-card animate-on-scroll">
+          <div class="feature-icon">
+            <i class="fas fa-database"></i>
+          </div>
+          <h3>Закрытые базы данных</h3>
+          <p>Интеграция с премиальными и закрытыми источниками информации для получения эксклюзивных данных и глубокой аналитики.</p>
+        </div>
+        
+        <div class="feature-card animate-on-scroll">
+          <div class="feature-icon">
+            <i class="fas fa-desktop"></i>
+          </div>
+          <h3>GUI Дизайн</h3>
+          <p>Интуитивный графический интерфейс пользователя с современным дизайном для удобной работы с инструментом.</p>
+        </div>
+        
+        <div class="feature-card animate-on-scroll">
+          <div class="feature-icon">
+            <i class="fas fa-search-plus"></i>
+          </div>
+          <h3>Мощный поиск</h3>
+          <p>Быстрый и точный поиск по 9 терабайтам данных с расширенными фильтрами и настройками.</p>
+        </div>
+        
+        <div class="feature-card animate-on-scroll">
+          <div class="feature-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h3>Аналитика данных</h3>
+          <p>Комплексный анализ найденной информации с возможностью экспорта результатов в различных форматах.</p>
+        </div>
+        
+        <div class="feature-card animate-on-scroll">
+          <div class="feature-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h3>Безопасность</h3>
+          <p>Полная анонимность, шифрование данных и защита от обнаружения при работе с конфиденциальной информацией.</p>
+        </div>
+      </div>
+
+      <!-- Stats Section -->
+      <div class="stats animate-on-scroll">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <h3 class="counter" data-target="9">0</h3>
+            <p>Терабайт источников</p>
+          </div>
+          <div class="stat-item">
+            <h3 class="counter" data-target="1000000">0</h3>
+            <p>Записей в базе</p>
+          </div>
+          <div class="stat-item">
+            <h3 class="counter" data-target="99.9">0</h3>
+            <p>% Точности поиска</p>
+          </div>
+          <div class="stat-item">
+            <h3 class="counter" data-target="24">0</h3>
+            <p>Часа доступности</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo Section -->
+  <section id="demo" class="demo">
+    <div class="container">
+      <div class="section-title animate-on-scroll">
+        <h2>Демонстрация возможностей</h2>
+        <p>Посмотрите, как работает OSINT Multi-Tool в реальном времени</p>
+      </div>
+      
+      <div class="demo-container animate-on-scroll">
+        <!-- Video Demo Section -->
+        <div class="video-demo" id="videoDemo">
+          <div class="custom-video-player">
+            <div class="video-container">
+              <video id="demoVideoPlayer" poster="">
+                <source src="video.mp4" type="video/mp4">
+                <source src="video.webm" type="video/webm">
+                <source src="video.mov" type="video/quicktime">
+                Ваш браузер не поддерживает видео.
+              </video>
+              
+              <div class="video-overlay" id="videoOverlay">
+                <div class="play-button" id="playButton">
+                  <i class="fas fa-play"></i>
+                </div>
+              </div>
+              
+              <div class="video-controls" id="videoControls">
+                <div class="controls-left">
+                  <button class="control-btn" id="playPauseBtn">
+                    <i class="fas fa-play"></i>
+                  </button>
+                  <div class="time-display">
+                    <span id="currentTime">0:00</span>
+                    <span>/</span>
+                    <span id="duration">0:00</span>
+                  </div>
+                </div>
+                
+                <div class="progress-container">
+                  <div class="progress-bar-video">
+                    <div class="progress-filled" id="progressFilled"></div>
+                    <div class="progress-handle" id="progressHandle"></div>
+                  </div>
+                </div>
+                
+                <div class="controls-right">
+                  <button class="control-btn" id="volumeBtn">
+                    <i class="fas fa-volume-up"></i>
+                  </button>
+                  <button class="control-btn" id="fullscreenBtn">
+                    <i class="fas fa-expand"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="video-info">
+              <div class="video-title">
+                <i class="fas fa-video" style="color: var(--primary-color); margin-right: 8px;"></i>
+                Демонстрация OSINT Multi-Tool
+              </div>
+              <div class="video-description">
+                Посмотрите, как наш инструмент находит информацию из 9 ТБ данных
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+
+          <div class="demo-results" id="demoResults" style="display: none;">
+            <div style="background: var(--bg-secondary); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+              <h4 style="color: var(--primary-color); margin-bottom: 15px;">
+                <i class="fas fa-chart-bar"></i> Результаты поиска
+              </h4>
+              <div class="result-item" style="padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: between; align-items: center;">
+                  <span style="color: var(--text-secondary);">📧 Email найден в базе:</span>
+                  <span style="color: var(--accent-color); margin-left: 10px;" id="foundEmail">example@domain.com</span>
+                </div>
+              </div>
+              <div class="result-item" style="padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: between; align-items: center;">
+                  <span style="color: var(--text-secondary);">� Связанные профили:</span>
+                  <span style="color: var(--primary-color); margin-left: 10px;">3 найдено</span>
+                </div>
+              </div>
+              <div class="result-item" style="padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: between; align-items: center;">
+                  <span style="color: var(--text-secondary);">📱 Номера телефонов:</span>
+                  <span style="color: var(--primary-color); margin-left: 10px;">2 найдено</span>
+                </div>
+              </div>
+              <div class="result-item" style="padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: between; align-items: center;">
+                  <span style="color: var(--text-secondary);">🌐 Утечки данных:</span>
+                  <span style="color: var(--secondary-color); margin-left: 10px;">1 обнаружена</span>
+                </div>
+              </div>
+              <div class="result-item" style="padding: 10px 0;">
+                <div style="display: flex; justify-content: between; align-items: center;">
+                  <span style="color: var(--text-secondary);">⏱️ Время поиска:</span>
+                  <span style="color: var(--accent-color); margin-left: 10px;">1.8 сек</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="cta-buttons">
+          <a href="https://t.me/BleskMarketbot?start=ctgr_117735" target="_blank" class="btn btn-primary">
+            <i class="fas fa-rocket"></i>
+            Начать использовать
+          </a>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" class="pricing">
+    <div class="container">
+      <div class="section-title animate-on-scroll">
+        <h2>Тарифные планы</h2>
+        <p>Выберите подходящий план для ваших задач</p>
+      </div>
+      
+      <div class="pricing-grid">
+        <div class="pricing-card animate-on-scroll">
+          <h3>Неделя</h3>
+          <div class="price">350₽</div>
+          <div class="price-period">на 7 дней</div>
+          <ul class="features-list">
+            <li><i class="fas fa-check"></i> Доступ к 9 ТБ источников</li>
+            <li><i class="fas fa-check"></i> Интуитивный GUI дизайн</li>
+            <li><i class="fas fa-check"></i> Полный функционал</li>
+            <li><i class="fas fa-check"></i> Регулярные обновления</li>
+            <li><i class="fas fa-check"></i> Email поддержка</li>
+            <li><i class="fas fa-times text-muted"></i> API токен недоступен</li>
+          </ul>
+          <a href="https://t.me/BleskMarketbot?start=ctgr_117735" target="_blank" class="btn btn-secondary">Выбрать план</a>
+        </div>
+        
+        <div class="pricing-card featured animate-on-scroll">
+          <h3>Месяц</h3>
+          <div class="price">650₽</div>
+          <div class="price-period">на 30 дней</div>
+          <ul class="features-list">
+            <li><i class="fas fa-check"></i> Доступ к 9 ТБ источников</li>
+            <li><i class="fas fa-check"></i> Интуитивный GUI дизайн</li>
+            <li><i class="fas fa-check"></i> Полный функционал</li>
+            <li><i class="fas fa-check"></i> Регулярные обновления</li>
+            <li><i class="fas fa-check"></i> Приоритетная поддержка</li>
+            <li><i class="fas fa-check"></i> Расширенные возможности</li>
+            <li><i class="fas fa-times text-muted"></i> API токен недоступен</li>
+          </ul>
+          <a href="https://t.me/BleskMarketbot?start=ctgr_117735" target="_blank" class="btn btn-primary">Выбрать план</a>
+        </div>
+        
+        <div class="pricing-card animate-on-scroll">
+          <h3>Навсегда</h3>
+          <div class="price">850₽</div>
+          <div class="price-period">пожизненно</div>
+          <ul class="features-list">
+            <li><i class="fas fa-check"></i> Доступ к 9 ТБ источников</li>
+            <li><i class="fas fa-check"></i> Интуитивный GUI дизайн</li>
+            <li><i class="fas fa-check"></i> Полный функционал</li>
+            <li><i class="fas fa-check"></i> Пожизненные обновления</li>
+            <li><i class="fas fa-check"></i> VIP поддержка</li>
+            <li><i class="fas fa-check"></i> Работа во всех странах</li>
+            <li><i class="fas fa-check"></i> Максимальная выгода</li>
+            <li><i class="fas fa-times text-muted"></i> API токен недоступен</li>
+          </ul>
+          <a href="https://t.me/BleskMarketbot?start=ctgr_117735" target="_blank" class="btn btn-secondary">Выбрать план</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="about">
+    <div class="container">
+      <div class="about-content">
+        <div class="about-text animate-on-scroll">
+          <h2>О OSINT Multi-Tool</h2>
+          <p>
+            Наш инструмент создан опытными разработчиками. 
+            За год активной разработки мы создали инструмент с современным GUI интерфейсом.
+          </p>
+          <p>
+            OSINT Multi-Tool предназначен для поиска и анализа информации о личности из открытых источников.
+            Мы постоянно обновляем базы данных и добавляем новые источники информации.
+          </p>
+          
+          <ul class="about-features">
+            <li><i class="fas fa-calendar-alt"></i> 1 год активной разработки</li>
+            <li><i class="fas fa-users"></i> Множество довольных пользователей</li>
+            <li><i class="fas fa-globe"></i> Работа во всех странах мира</li>
+            <li><i class="fas fa-sync-alt"></i> Регулярные обновления</li>
+          </ul>
+        </div>
+        
+        <div class="about-image animate-on-scroll">
+          <div class="hacker-terminal">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+              </div>
+              <div class="terminal-title">OSINT Multi-Tool v2.0 - Deep Search</div>
+            </div>
+            
+            <div class="hacker-content" id="hackerContent">
+              <div class="search-line">
+                <span class="prompt">root@osint:~$</span>
+                <span class="command">osint-tool --phone-scan --deep --continuous</span>
+                <span class="cursor">█</span>
+              </div>
+            </div>
+            
+            <div class="scan-progress" id="scanProgress" style="display: none;">
+              <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+              </div>
+              <div class="scan-status" id="scanStatus">Инициализация...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact" class="contact">
+    <div class="container">
+      <div class="contact-content">
+        <div class="section-title animate-on-scroll">
+          <h2>Свяжитесь с нами</h2>
+          <p>Готовы начать? Мы поможем вам выбрать оптимальное решение</p>
+        </div>
+        
+        <div class="contact-grid">
+          <div class="contact-item animate-on-scroll">
+            <i class="fab fa-telegram"></i>
+            <h3>Telegram</h3>
+            <p>Покупка и техническая поддержка</p>
+            <a href="https://t.me/BleskMarketbot?start=ctgr_117735" target="_blank">@BleskMarketbot</a>
+          </div>
+          
+          <div class="contact-item animate-on-scroll">
+            <i class="fas fa-envelope"></i>
+            <h3>Email</h3>
+            <p>Связь с разработчиками</p>
+            <a href="mailto:bleskmarket@gmail.com">bleskmarket@gmail.com</a>
+          </div>
+          
+          <div class="contact-item animate-on-scroll">
+            <i class="fas fa-info-circle"></i>
+            <h3>Важная информация</h3>
+            <p>API токены не предоставляются</p>
+            <span style="color: var(--text-muted); font-size: 0.9rem;">Только GUI версия</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>OSINT Multi-Tool</h3>
+          <p>Инструмент для поиска и анализа информации о личности из открытых источников. Создан опытными разработчиками для поиска данных.</p>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-telegram"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+            <a href="#"><i class="fab fa-github"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Продукт</h3>
+          <p><a href="#features">Возможности</a></p>
+          <p><a href="#pricing">Цены</a></p>
+          <p><a href="#demo">Демо</a></p>
+          <p><a href="#">API документация</a></p>
+        </div>
+        
+        <div class="footer-section">
+          <h3>Поддержка</h3>
+          <p><a href="https://t.me/BleskMarketbot?start=ctgr_117735" target="_blank">Telegram поддержка</a></p>
+          <p><a href="mailto:bleskmarket@gmail.com">Email поддержка</a></p>
+          <p><a href="#contact">Контакты</a></p>
+          <p><a href="#pricing">Тарифы</a></p>
+        </div>
+        
+
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 OSINT Multi-Tool. Все права защищены. | Связь: <a href="mailto:bleskmarket@gmail.com">bleskmarket@gmail.com</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to Top Button -->
+  <button class="back-to-top" id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <!-- JavaScript -->
+  <script>
+    // Loading Screen
+    window.addEventListener('load', function() {
+      const loadingScreen = document.getElementById('loadingScreen');
+      setTimeout(() => {
+        loadingScreen.style.opacity = '0';
+        setTimeout(() => {
+          loadingScreen.style.display = 'none';
+        }, 500);
+      }, 1000);
+    });
+
+    // Mobile Menu
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const navMenu = document.getElementById('navMenu');
+
+    mobileMenuBtn.addEventListener('click', function() {
+      navMenu.classList.toggle('active');
+      const icon = this.querySelector('i');
+      icon.classList.toggle('fa-bars');
+      icon.classList.toggle('fa-times');
+    });
+
+    // Smooth Scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+          // Close mobile menu if open
+          navMenu.classList.remove('active');
+          mobileMenuBtn.querySelector('i').classList.add('fa-bars');
+          mobileMenuBtn.querySelector('i').classList.remove('fa-times');
+        }
+      });
+    });
+
+    // Header Background on Scroll
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 100) {
+        header.style.background = 'rgba(10, 10, 15, 0.98)';
+        header.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.3)';
+      } else {
+        header.style.background = 'rgba(10, 10, 15, 0.95)';
+        header.style.boxShadow = 'none';
+      }
+    });
+
+    // Animate on Scroll
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animated');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+      observer.observe(el);
+    });
+
+    // Counter Animation
+    function animateCounter(element) {
+      const target = parseInt(element.getAttribute('data-target'));
+      const increment = target / 100;
+      let current = 0;
+      
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+          current = target;
+          clearInterval(timer);
+        }
+        
+        if (target > 1000000) {
+          element.textContent = (current / 1000000).toFixed(1) + 'M+';
+        } else if (target > 1000) {
+          element.textContent = (current / 1000).toFixed(0) + 'K+';
+        } else if (target === 99.9) {
+          element.textContent = current.toFixed(1) + '%';
+        } else if (target === 9) {
+          element.textContent = Math.floor(current) + ' ТБ';
+        } else {
+          element.textContent = Math.floor(current) + (target === 24 ? '/7' : '+');
+        }
+      }, 20);
+    }
+
+    // Trigger counter animation when stats section is visible
+    const statsObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const counters = entry.target.querySelectorAll('.counter');
+          counters.forEach(counter => {
+            if (!counter.classList.contains('animated')) {
+              counter.classList.add('animated');
+              animateCounter(counter);
+            }
+          });
+        }
+      });
+    }, { threshold: 0.5 });
+
+    const statsSection = document.querySelector('.stats');
+    if (statsSection) {
+      statsObserver.observe(statsSection);
+    }
+
+    // Terminal Animation
+    const terminalLines = [
+      '$ osint-tool --search "target@example.com"',
+      '🔍 Инициализация поиска...',
+      '📊 Сканирование 247 источников...',
+      '✅ Найдено 15 совпадений в социальных сетях',
+      '✅ Обнаружены 3 утечки данных',
+      '✅ Найдены связанные домены: 8',
+      '📈 Анализ завершен за 2.3 секунды',
+      '$ _'
+    ];
+
+    function typeTerminal() {
+      const terminalContent = document.getElementById('terminalContent');
+      terminalContent.innerHTML = '';
+      
+      let lineIndex = 0;
+      
+      function typeLine() {
+        if (lineIndex < terminalLines.length) {
+          const line = document.createElement('div');
+          if (lineIndex === terminalLines.length - 1) {
+            line.className = 'typing-animation';
+            line.textContent = '█';
+          } else {
+            line.textContent = terminalLines[lineIndex];
+          }
+          terminalContent.appendChild(line);
+          lineIndex++;
+          
+          setTimeout(typeLine, lineIndex === terminalLines.length - 1 ? 0 : 800);
+        }
+      }
+      
+      typeLine();
+    }
+
+    // Start terminal animation when demo section is visible
+    const demoObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !entry.target.classList.contains('terminal-animated')) {
+          entry.target.classList.add('terminal-animated');
+          setTimeout(typeTerminal, 500);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    const demoSection = document.getElementById('demo');
+    if (demoSection) {
+      demoObserver.observe(demoSection);
+    }
+
+    // Back to Top Button
+    const backToTopBtn = document.getElementById('backToTop');
+
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    });
+
+    backToTopBtn.addEventListener('click', function() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+
+    // Particles Background
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = 50;
+
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.style.position = 'absolute';
+        particle.style.width = Math.random() * 4 + 1 + 'px';
+        particle.style.height = particle.style.width;
+        particle.style.background = 'rgba(0, 212, 255, 0.3)';
+        particle.style.borderRadius = '50%';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animation = `float ${Math.random() * 10 + 10}s infinite linear`;
+        
+        particlesContainer.appendChild(particle);
+      }
+    }
+
+    // Add floating animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes float {
+        0% {
+          transform: translateY(100vh) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-100vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Initialize particles
+    createParticles();
+
+    // Keyboard Navigation
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        navMenu.classList.remove('active');
+        mobileMenuBtn.querySelector('i').classList.add('fa-bars');
+        mobileMenuBtn.querySelector('i').classList.remove('fa-times');
+      }
+    });
+
+    // Performance optimization: Throttle scroll events
+    let ticking = false;
+    function updateOnScroll() {
+      // Header background update
+      if (window.scrollY > 100) {
+        header.style.background = 'rgba(10, 10, 15, 0.98)';
+        header.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.3)';
+      } else {
+        header.style.background = 'rgba(10, 10, 15, 0.95)';
+        header.style.boxShadow = 'none';
+      }
+
+      // Back to top button
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+
+      ticking = false;
+    }
+
+    function requestTick() {
+      if (!ticking) {
+        requestAnimationFrame(updateOnScroll);
+        ticking = true;
+      }
+    }
+
+    window.addEventListener('scroll', requestTick);
+
+    // Add some interactive effects
+    document.querySelectorAll('.feature-card, .pricing-card').forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-10px) scale(1.02)';
+      });
+      
+      card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0) scale(1)';
+      });
+    });
+
+
+
+
+
+    // Hacker Terminal Animation
+    let hackerInterval;
+    let isHackerRunning = false;
+
+    const realDataStream = [
+      // Телефон 1
+      { type: 'info', text: '79258004623' },
+      { type: 'success', text: '   Россия, Москва и Московская область, ПАО "МЕГАФОН"' },
+      { type: 'success', text: '   Дмитриева Ольга Игоревна 30.10.1987' },
+      { type: 'success', text: '   Ишин Николай Вадимович 29.12.1987' },
+      { type: 'info', text: '   names:' },
+      { type: 'success', text: '   Aleksey Isvec Xaxol' },
+      { type: 'success', text: '   Дима Натурал' },
+      { type: 'success', text: '   Николай Ишин' },
+      { type: 'warning', text: '👤 ВАРИАНТЫ ИМЕНИ:' },
+      { type: 'success', text: '   • 5498451' },
+      { type: 'success', text: '   • Дмитриева Ольга Игоревна' },
+      { type: 'success', text: '   • Дурдин Александр Борисович' },
+      { type: 'success', text: '   • Иван' },
+      { type: 'success', text: '   • Ишин Николай' },
+      { type: 'success', text: '   • Ишин Николай Вадимович' },
+      { type: 'success', text: '   • Кудрявцева Ирина Александровна' },
+      { type: 'success', text: '   • Николай' },
+      { type: 'warning', text: '🎂 Дата рождения:' },
+      { type: 'success', text: '   29.12.1987' },
+      { type: 'success', text: '   21.01.1988' },
+      { type: 'success', text: '   12.09.1989' },
+      { type: 'success', text: '   31.12.1999' },
+      { type: 'success', text: '   29.09.1987' },
+      { type: 'success', text: '   30.10.1987' },
+      { type: 'warning', text: '🏠 Адрес:' },
+      { type: 'success', text: '   125364, Россия, Москва, г. Москва, ул. Штурвальная, д. 10, к. 1' },
+      { type: 'success', text: '   Москва, г. Москва, ул. Штурвальная, д. 10, к. 1' },
+      { type: 'success', text: '   Москва м. Пятницкое шоссе' },
+      { type: 'success', text: '   Россия Москва ул. Штурвальная 10 1 2 4' },
+      { type: 'success', text: '   Россия Москва ул. Штурвальная 10 1 24' },
+      { type: 'success', text: '   Россия, Москва, г. Москва, 125364, Штурвальная, д. 10, Кор. 1, кв. 24' },
+      { type: 'success', text: '   Туристская - 4 - 5 - 79   г. Москва - Туристская - 4 - 5 - 79' },
+      { type: 'info', text: '   transport:' },
+      { type: 'success', text: '   А747ВТ199' },
+      { type: 'success', text: '   Е646НО197, VIN:WАUZZZ8Х9ВВ098677, Модель:АУДИ А1 СИНИЙ 2011' },
+      { type: 'success', text: '   Е646НО197, Модель:АУДИ А1 2011' },
+      { type: 'success', text: '   Е646НО197, Модель:АУДИ А1 2011г' },
+      { type: 'success', text: '   Х499УА750' },
+      { type: 'warning', text: '📧 Email:' },
+      { type: 'success', text: '   test@test.ru' },
+      { type: 'success', text: '   nikola.ishin@yandex.ru' },
+      { type: 'success', text: '   nikolayishin87@gmail.com' },
+      { type: 'success', text: '   ishin2006@mail.ru' },
+      { type: 'success', text: '   ishin1997@mail.ru' },
+      { type: 'success', text: '   nikolaishin87@gmail.com' },
+      { type: 'success', text: '   durdin.2016@mail.ru' },
+      { type: 'success', text: '   durdinab89@mail.ru' },
+      { type: 'success', text: '   justirena@nm.ru' },
+      { type: 'success', text: '   kudriavtseva@vimmtorg.ru' },
+      { type: 'success', text: '   dakd23@1win.com' },
+      { type: 'critical', text: '   password:' },
+      { type: 'critical', text: '   Rjk.yz' },
+      { type: 'info', text: '   url:' },
+      { type: 'success', text: '   https://vk.com/id86444475' },
+      { type: 'success', text: '   https://vk.com/id86024694' },
+      { type: 'warning', text: '   passport:' },
+      { type: 'critical', text: '   4509538144' },
+      { type: 'critical', text: '   4509538144, выдан: 06.02.2008 ОУФМС РНА ЮЖНОЕ ТУШИНО Г.МОСКВЫ' },
+      { type: 'critical', text: '   4509538144, от 02.06.2008, выдан: ОНИЕМ ПО РНУ ЮЖНОЕ ТУШИНО ОУФМС РОССИИ ПО ГОР. МОСКВЕ В СЗАО, код подразделения: 770099' },
+      { type: 'critical', text: '   4509538144, от 06.02.2008, выдан: ОНИЕМ ПО РНУ ЮЖНОЕ ТУШИНО ОУФМС РОССИИ ПО ГОР. МОСКВЕ В СЗАО, код подразделения: 770099' },
+      { type: 'critical', text: '   4509703023, выдан: ОТД. ПО РНУ ЮЖНОЕ ТУШИНО ОУФМС РОССИИ ПО Г. МОСКВЕ В СЗАО 21.04.2008' },
+      { type: 'warning', text: '   inn:' },
+      { type: 'critical', text: '   773385264641' },
+      { type: 'warning', text: '   snils:' },
+      { type: 'critical', text: '   20732314724' },
+      
+      // Телефон 2
+      { type: 'info', text: '79165432109' },
+      { type: 'success', text: '   Россия, Санкт-Петербург, ПАО "МТС"' },
+      { type: 'success', text: '   Петрова Анна Сергеевна 15.03.1992' },
+      { type: 'success', text: '   Смирнов Дмитрий Александрович 22.07.1990' },
+      { type: 'info', text: '   names:' },
+      { type: 'success', text: '   Anna Petrova' },
+      { type: 'success', text: '   Аня Петрова' },
+      { type: 'success', text: '   Дмитрий Смирнов' },
+      { type: 'warning', text: '👤 ВАРИАНТЫ ИМЕНИ:' },
+      { type: 'success', text: '   • Петрова Анна Сергеевна' },
+      { type: 'success', text: '   • Смирнов Дмитрий Александрович' },
+      { type: 'success', text: '   • Анна' },
+      { type: 'success', text: '   • Дмитрий' },
+      { type: 'success', text: '   • Петрова А.С.' },
+      { type: 'warning', text: '🎂 Дата рождения:' },
+      { type: 'success', text: '   15.03.1992' },
+      { type: 'success', text: '   22.07.1990' },
+      { type: 'success', text: '   10.05.1991' },
+      { type: 'warning', text: '🏠 Адрес:' },
+      { type: 'success', text: '   190000, Россия, Санкт-Петербург, Невский пр., д. 28, кв. 15' },
+      { type: 'success', text: '   СПб, Московский пр., д. 145, кв. 67' },
+      { type: 'success', text: '   Санкт-Петербург, ул. Рубинштейна, д. 23' },
+      { type: 'info', text: '   transport:' },
+      { type: 'success', text: '   В123АВ178' },
+      { type: 'success', text: '   К456МН197, Модель:TOYOTA CAMRY 2018' },
+      { type: 'warning', text: '📧 Email:' },
+      { type: 'success', text: '   anna.petrova@gmail.com' },
+      { type: 'success', text: '   a.petrova@yandex.ru' },
+      { type: 'success', text: '   dmitry.smirnov@mail.ru' },
+      { type: 'success', text: '   petrova1992@rambler.ru' },
+      { type: 'critical', text: '   password:' },
+      { type: 'critical', text: '   anna123456' },
+      { type: 'critical', text: '   dmitry2023' },
+      { type: 'info', text: '   url:' },
+      { type: 'success', text: '   https://vk.com/id123456789' },
+      { type: 'success', text: '   https://instagram.com/anna_petrova92' },
+      { type: 'warning', text: '   passport:' },
+      { type: 'critical', text: '   4012345678' },
+      { type: 'critical', text: '   4012345678, выдан: 15.04.2010 ОУФМС ЦЕНТРАЛЬНОГО РАЙОНА СПБ' },
+      { type: 'warning', text: '   inn:' },
+      { type: 'critical', text: '   781234567890' },
+      { type: 'warning', text: '   snils:' },
+      { type: 'critical', text: '   12345678901' },
+
+      // Телефон 3
+      { type: 'info', text: '79037654321' },
+      { type: 'success', text: '   Россия, Екатеринбург, ПАО "БИЛАЙН"' },
+      { type: 'success', text: '   Козлов Максим Владимирович 08.11.1985' },
+      { type: 'success', text: '   Козлова Елена Петровна 25.06.1988' },
+      { type: 'info', text: '   names:' },
+      { type: 'success', text: '   Max Kozlov' },
+      { type: 'success', text: '   Максим Козлов' },
+      { type: 'success', text: '   Лена Козлова' },
+      { type: 'warning', text: '👤 ВАРИАНТЫ ИМЕНИ:' },
+      { type: 'success', text: '   • Козлов Максим Владимирович' },
+      { type: 'success', text: '   • Козлова Елена Петровна' },
+      { type: 'success', text: '   • Максим' },
+      { type: 'success', text: '   • Елена' },
+      { type: 'success', text: '   • Козлов М.В.' },
+      { type: 'warning', text: '🎂 Дата рождения:' },
+      { type: 'success', text: '   08.11.1985' },
+      { type: 'success', text: '   25.06.1988' },
+      { type: 'success', text: '   12.03.1986' },
+      { type: 'warning', text: '🏠 Адрес:' },
+      { type: 'success', text: '   620000, Россия, Екатеринбург, ул. Ленина, д. 52, кв. 89' },
+      { type: 'success', text: '   Екатеринбург, пр. Космонавтов, д. 18, кв. 45' },
+      { type: 'success', text: '   Свердловская обл., г. Екатеринбург, ул. Малышева, д. 101' },
+      { type: 'info', text: '   transport:' },
+      { type: 'success', text: '   Е789КЛ196' },
+      { type: 'success', text: '   М234НО66, Модель:BMW X5 2020' },
+      { type: 'warning', text: '📧 Email:' },
+      { type: 'success', text: '   max.kozlov@gmail.com' },
+      { type: 'success', text: '   kozlov.max@yandex.ru' },
+      { type: 'success', text: '   elena.kozlova@mail.ru' },
+      { type: 'success', text: '   maxkozlov85@rambler.ru' },
+      { type: 'critical', text: '   password:' },
+      { type: 'critical', text: '   maxim1985' },
+      { type: 'critical', text: '   elena123' },
+      { type: 'info', text: '   url:' },
+      { type: 'success', text: '   https://vk.com/id987654321' },
+      { type: 'success', text: '   https://ok.ru/profile/123456789' },
+      { type: 'warning', text: '   passport:' },
+      { type: 'critical', text: '   6512345678' },
+      { type: 'critical', text: '   6512345678, выдан: 20.12.2003 ОУФМС ЛЕНИНСКОГО РАЙОНА ЕКАТЕРИНБУРГА' },
+      { type: 'warning', text: '   inn:' },
+      { type: 'critical', text: '   661234567890' },
+      { type: 'warning', text: '   snils:' },
+      { type: 'critical', text: '   98765432101' }
+    ];
+
+    let currentDataIndex = 0;
+
+    function addHackerLine() {
+      const hackerContent = document.getElementById('hackerContent');
+      
+      if (!hackerContent) return;
+
+      // Бесконечный цикл - когда достигаем конца, начинаем сначала
+      if (currentDataIndex >= realDataStream.length) {
+        currentDataIndex = 0;
+      }
+
+      const data = realDataStream[currentDataIndex];
+      const line = document.createElement('div');
+      line.className = `data-line ${data.type}`;
+      line.textContent = data.text;
+
+      hackerContent.appendChild(line);
+      
+      // Auto scroll to bottom
+      hackerContent.scrollTop = hackerContent.scrollHeight;
+
+      // Keep only last 30 lines for performance
+      const lines = hackerContent.querySelectorAll('.data-line');
+      if (lines.length > 30) {
+        hackerContent.removeChild(lines[0]);
+      }
+
+      currentDataIndex++;
+
+      // Update progress (циклический прогресс)
+      const cycleLength = 50; // Каждые 50 записей - новый цикл прогресса
+      const cycleProgress = (currentDataIndex % cycleLength) / cycleLength * 100;
+      const progressFill = document.getElementById('progressFill');
+      const scanStatus = document.getElementById('scanStatus');
+      const scanProgress = document.getElementById('scanProgress');
+
+      if (progressFill && scanStatus) {
+        scanProgress.style.display = 'block';
+        progressFill.style.width = cycleProgress + '%';
+        
+        const statusMessages = [
+          'Поиск в базах данных...',
+          'Анализ персональных данных...',
+          'Сканирование социальных сетей...',
+          'Поиск документов...',
+          'Анализ транспортных средств...',
+          'Поиск email адресов...',
+          'Проверка паролей...',
+          'Анализ паспортных данных...',
+          'Поиск ИНН и СНИЛС...',
+          'Завершение цикла сканирования...'
+        ];
+        
+        const statusIndex = Math.floor((cycleProgress / 100) * statusMessages.length);
+        scanStatus.textContent = statusMessages[Math.min(statusIndex, statusMessages.length - 1)];
+      }
+    }
+
+    function startHackerAnimation() {
+      if (isHackerRunning) return;
+      
+      isHackerRunning = true;
+      currentDataIndex = 0;
+      
+      // Show progress bar
+      const scanProgress = document.getElementById('scanProgress');
+      if (scanProgress) {
+        scanProgress.style.display = 'block';
+      }
+
+      // Very fast animation like real OSINT tool - 50-150ms intervals
+      hackerInterval = setInterval(addHackerLine, 50 + Math.random() * 100);
+    }
+
+    function stopHackerAnimation() {
+      if (hackerInterval) {
+        clearInterval(hackerInterval);
+        hackerInterval = null;
+        isHackerRunning = false;
+      }
+    }
+
+    // Start hacker animation when about section is visible
+    const aboutObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setTimeout(startHackerAnimation, 1000); // Delay for better effect
+        } else {
+          stopHackerAnimation();
+        }
+      });
+    }, { threshold: 0.3 });
+
+    // Initialize components
+    document.addEventListener('DOMContentLoaded', function() {
+
+      // Observe about section for data stream
+      const aboutSection = document.getElementById('about');
+      if (aboutSection) {
+        aboutObserver.observe(aboutSection);
+      }
+
+      // Initialize custom video player
+      initVideoPlayer();
+    });
+
+    // Custom Video Player Functions
+    function initVideoPlayer() {
+      const video = document.getElementById('demoVideoPlayer');
+      const playButton = document.getElementById('playButton');
+      const playPauseBtn = document.getElementById('playPauseBtn');
+      const videoOverlay = document.getElementById('videoOverlay');
+      const progressFilled = document.getElementById('progressFilled');
+      const progressHandle = document.getElementById('progressHandle');
+      const currentTimeSpan = document.getElementById('currentTime');
+      const durationSpan = document.getElementById('duration');
+      const volumeBtn = document.getElementById('volumeBtn');
+      const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+      if (!video) return;
+
+      // Play/Pause functionality
+      function togglePlay() {
+        if (video.paused) {
+          video.play();
+          playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+          videoOverlay.classList.add('hidden');
+        } else {
+          video.pause();
+          playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+          videoOverlay.classList.remove('hidden');
+        }
+      }
+
+      playButton.addEventListener('click', togglePlay);
+      playPauseBtn.addEventListener('click', togglePlay);
+      video.addEventListener('click', togglePlay);
+
+      // Update progress
+      video.addEventListener('timeupdate', () => {
+        const progress = (video.currentTime / video.duration) * 100;
+        progressFilled.style.width = progress + '%';
+        progressHandle.style.left = progress + '%';
+        currentTimeSpan.textContent = formatTime(video.currentTime);
+      });
+
+      // Set duration
+      video.addEventListener('loadedmetadata', () => {
+        durationSpan.textContent = formatTime(video.duration);
+      });
+
+      // Progress bar click
+      const progressBar = document.querySelector('.progress-bar-video');
+      progressBar.addEventListener('click', (e) => {
+        const rect = progressBar.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        video.currentTime = pos * video.duration;
+      });
+
+      // Volume control
+      volumeBtn.addEventListener('click', () => {
+        if (video.muted) {
+          video.muted = false;
+          volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+        } else {
+          video.muted = true;
+          volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+        }
+      });
+
+      // Fullscreen
+      fullscreenBtn.addEventListener('click', () => {
+        if (video.requestFullscreen) {
+          video.requestFullscreen();
+        } else if (video.webkitRequestFullscreen) {
+          video.webkitRequestFullscreen();
+        } else if (video.msRequestFullscreen) {
+          video.msRequestFullscreen();
+        }
+      });
+
+      // Video ended
+      video.addEventListener('ended', () => {
+        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        videoOverlay.classList.remove('hidden');
+        progressFilled.style.width = '0%';
+        progressHandle.style.left = '0%';
+      });
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Console easter egg
+    console.log(`
+    ╔══════════════════════════════════════╗
+    ║        OSINT Multi-Tool v2.0         ║
+    ║                                      ║
+    ║  Профессиональный инструмент для     ║
+    ║  цифровой разведки и анализа данных  ║
+    ║                                      ║
+    ║  Telegram: @BleskMarketbot           ║
+    ╚══════════════════════════════════════╝
+    `);
+  </script>
 </body>
 </html>
